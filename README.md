@@ -1,27 +1,93 @@
 # ETC-BigData-Platform
 Highway ETC big data management and monitoring system built with Hadoop, Spark, Flink, and HBase.
 
-# 2025-11-30 项目规划
-# 1. 初步探索
-#   1.1 数据预处理：原始的数据很脏，每个月份的数据名称不一样，每个数据格式内部的内容也很乱，第一次只是简单清洗，应该根据需要对字段进行严格的清洗，这个需要确定。
-#   1.2 数据存储：现在的做法是简单清理数据得到12月和1月的两张大表，然后我只实现了用KafKa把每一条读入消息队列，然后Flink放入Hbase里面，Hbase的存储逻辑是需要设计row-key的，我目前设计的row-key不是很能达到我的要求，这个需要讨论；同时也可以用Flink放到MyCat中间件，存到MySQL里面，这里需要设计分库分表，需要讨论；最后是用Flink放到Redis里面，这个我没学过，可以再多了解一下，但是它可以用来做实时大屏。
-#   1.3 接口：目前我的电脑三台虚拟机node1 node2 node3的ip分别是192.168.88.131 192.168.88.132 192.168.88.133，然后我的电脑设置了域名映射可以ping通，其他人的电脑行不行？Hbase提供thrift接口，监听在8085，是给Flask调用Hbase使用的，前端用Vue对接Flask在我本地的8080接口来访问，这是目前实现的。然后就是MySQL我测试了把数据简单放在node1上面，通过node1的3306接口来访问，可以实现SQLAgent，当然这个后期要加强内容。
-# 2. 项目需求
-#   2.1 交互式访问：设置好MyCat的分片规则之后，KafKa生产数据，Flink接入MyCat然后根据规则把数据写入MySQL之后，通过langchain SQLAgent调用DeepSeek api来实现交互式查询。
-#   2.2 可视化大屏，动态展示实时信息，要求每半分钟一次对结果进行刷新：这个是说用Redis内存数据库来实现，但是我暂时还没了解，也可能可以用其他的。
-#   2.3 实时套牌车检测：这个的实现形式还没有考虑，不知道放在哪一个部分，实验给的例子是用Flink来计算分析，然后交给前端报警
-#   2.4 车流预警算法，对收费站车流进行实时预警并显示：这个考虑是用CNN+LSTM+Attention来实现预测，就是预测HBase里面的数据，当然是要预处理的，所以在实现算法之前要看看需要哪些字段。
-# 3. 一些其他问题
-#   3.1 给了一个CloudLab，其实就是国外的一些高性能计算机组成的集群，我们可以租用，但是在上面需要重新配置Hadoop Flink啥的，我就没搞，目前都是用的自己的虚拟机，然后去年他们用的是华为云的ECS？这个我不了解，没用过
+2025-11-30 项目规划
+1. 初步探索
+1.1 数据预处理：原始的数据很脏，每个月份的数据名称不一样，每个数据格式内部的内容也很乱，第一次只是简单清洗，应该根据需要对字段进行严格的清洗，这个需要确定。
+1.2 数据存储：现在的做法是简单清理数据得到12月和1月的两张大表，然后我只实现了用KafKa把每一条读入消息队列，然后Flink放入Hbase里面，Hbase的存储逻辑是需要设计row-key的，我目前设计的row-key不是很能达到我的要求，这个需要讨论；同时也可以用Flink放到MyCat中间件，存到MySQL里面，这里需要设计分库分表，需要讨论；最后是用Flink放到Redis里面，这个我没学过，可以再多了解一下，但是它可以用来做实时大屏。
+1.3 接口：目前我的电脑三台虚拟机node1 node2 node3的ip分别是192.168.88.131 192.168.88.132 192.168.88.133，然后我的电脑设置了域名映射可以ping通，其他人的电脑行不行？Hbase提供thrift接口，监听在8085，是给Flask调用Hbase使用的，前端用Vue对接Flask在我本地的8080接口来访问，这是目前实现的。然后就是MySQL我测试了把数据简单放在node1上面，通过node1的3306接口来访问，可以实现SQLAgent，当然这个后期要加强内容。
+2. 项目需求
+2.1 交互式访问：设置好MyCat的分片规则之后，KafKa生产数据，Flink接入MyCat然后根据规则把数据写入MySQL之后，通过langchain SQLAgent调用DeepSeek api来实现交互式查询。
+2.2 可视化大屏，动态展示实时信息，要求每半分钟一次对结果进行刷新：这个是说用Redis内存数据库来实现，但是我暂时还没了解，也可能可以用其他的。
+2.3 实时套牌车检测：这个的实现形式还没有考虑，不知道放在哪一个部分，实验给的例子是用Flink来计算分析，然后交给前端报警
+2.4 车流预警算法，对收费站车流进行实时预警并显示：这个考虑是用CNN+LSTM+Attention来实现预测，就是预测HBase里面的数据，当然是要预处理的，所以在实现算法之前要看看需要哪些字段。
+3. 一些其他问题
+3.1 给了一个CloudLab，其实就是国外的一些高性能计算机组成的集群，我们可以租用，但是在上面需要重新配置Hadoop Flink啥的，我就没搞，目前都是用的自己的虚拟机，然后去年他们用的是华为云的ECS？这个我不了解，没用过
 
-# 目前的一些启动指令：
-#   在 node1, node2, node3 分别执行:
-#       zkServer.sh start kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties
-#   (在 NameNode 节点，通常是 node1)：
-#       start-dfs.sh start-yarn.sh  start-hbase.sh hbase-daemon.sh start thrift -p 8085
-#   KafKa相关：
-#   kafka-topics.sh --list --bootstrap-server node1:9092    查看有哪些主题
-#   kafka-topics.sh --describe --bootstrap-server node1:9092 --topic etc-traffic-data   查看特定主题的分区和副本状态
-#   kafka-console-consumer.sh --bootstrap-server node1:9092 --topic etc-traffic-data --from-beginning --max-messages 10 查看历史数据
-# 目前的停止指令：
-#   kafka-server-stop.sh hbase-daemon.sh stop thrift stop-hbase.shstop-yarn.sh stop-dfs.sh zkServer.sh stop
+目前的一些启动指令：
+在 node1, node2, node3 分别执行:
+    zkServer.sh start kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties
+(在 NameNode 节点，通常是 node1)：
+    start-dfs.sh start-yarn.sh  start-hbase.sh hbase-daemon.sh start thrift -p 8085
+KafKa相关：
+kafka-topics.sh --list --bootstrap-server node1:9092    查看有哪些主题
+kafka-topics.sh --describe --bootstrap-server node1:9092 --topic etc-traffic-data   查看特定主题的分区和副本状态
+kafka-console-consumer.sh --bootstrap-server node1:9092 --topic etc-traffic-data --from-beginning --max-messages 10 查看历史数据
+目前的停止指令：
+kafka-server-stop.sh hbase-daemon.sh stop thrift stop-hbase.sh stop-yarn.sh stop-dfs.sh zkServer.sh stop
+
+2025-12-2
+了解数据，数据太脏了
+八个字段 第一个唯一id 第二个行政区划 第三个具体卡口 第四个行车方向（1和2） 第五个过车时间（2023/12/1 0:08:00） 第六个号牌种类（有几个选项，也有缺失值，然后有点脏 02 01 52 51 13 22 -） 第七个具体车牌（4+3结构，有脏数据，这个要具体洗洗） 第八个车牌类型（品牌 车型 年款，有很多缺失值）
+以上是根据20231201分析出来的，后面肯定有脏数据
+
+以23-12-1的数据为例，确定清洗原则
+1.唯一id，分析缺失值（无），不管
+2.行政区划，就是七个县，分析缺失值（无），不管
+3.具体卡口，给出映射规则，原始数据很乱，把他扩展成了更好的格式
+    ROAD_ID（道路编号）	K_INDEX（K值）	BOUNDARY_LEVEL（边界级别，省级或者市级）	BOUNDARY_DETAIL（具体是哪里和哪里的卡口）		BOUNDARY_LABEL（属于哪个界）	CLEAN_KKMC（生成的编号 道路编号-K值-级别）
+补充一点高速公路的知识：
+高速公路的编号唯一确定一条高速/公路
+K值的含义是，距离这条公路的起点开始，已经行驶了多少公里
+所以根据编号+K值就可以唯一确定一个卡口，不需要这么多复杂字段
+每个卡口有具体的字段，分成省中间，市之间
+把鹿梁县的县道标记为X308，都在文件里面标出来了
+4.行车方向：按照行车方向划分，取值为2的都是睢宁县，这个是个业务逻辑我觉得 所以 方向为2的数据只有两个具体的卡口名称
+5.过车时间：加入TS时间戳字段和MQ MySQL可读字段 前者构建row-key的时候可以使用
+                 GCSJ        GCSJ_TS              GCSJ_MQ
+0  2023/12/1 0:02  1701388920000  2023-12-01 00:02:00
+6.号牌种类02 01 52 51 13 22 - ：修改-为未知，保证为两位数
+| HPZL 代码 | 含义      | 分类说明        |
+| ------- | ------- | ----------- |
+| **01**  | 大型汽车    | 大货车、大客车     |
+| **02**  | 小型汽车    | 小轿车、SUV、面包车 |
+| **13**  | 外籍汽车    | 外国 + 外交车    |
+| **22**  | 港澳车辆    | 港车北上 / 澳车北上 |
+| **51**  | 挂车      | Trailer     |
+| **52**  | 教练车     | “学”字车       |
+| **-**   | 缺失/无法识别 | 改写成未知  |
+7.具体车牌：类似苏CD7***是规范格式 不符合的直接丢掉，因为这个字段其实指向很明显，没有这个其他业务根本没有必要分析
+    正则脱敏：^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽粤青藏川宁琼][A-HJ-NP-Z][A-HJ-NP-Z0-9][A-Z0-9][A-Z0-9*]{3}$
+8.车牌类型:最后是变成BRAND MODEL YEAR三个字段
+CLPPXH 字段解析规则：
+按 “-” 分割，第一段为品牌（去掉“牌”）
+第二段为车型，如不存在则 NULL
+第三段及之后内容用于提取年款
+出现 “#” 时只保留 “#” 前部分
+年款可能包含多个年份，使用 “_” 分隔，取第一项
+若年款包含 “未知”“unknown”“进口车” 等，则 YEAR=未知
+若模型包含 “未知”“unknown”“进口车” 等，则 MODEL=未知
+车型中有一个特殊字符 Π1 变成车型 派1
+
+
+总共有七个县（从12.1的数据里面看的 睢宁县 邳州市 丰县 高速五大队 沛县 铜山县 新沂市）
+2023 12 
+2023-12-11-final.csv 	00:00:23	16:57:54 ⚠️ 缺失晚间数据
+2023-12-12-final.csv  10:21:38	23:53:09 ⚠️ 原始缺失
+2023-12-13-final.csv 10:25:35	23:59:35 ⚠️ 缺失早间数据
+2024 01 
+1月3日 00:00 - 11:43 ⚠️ 缺失下午和晚间数据 (12:00 - 24:00)
+1月4日 09:51 - 23:59 ⚠️ 缺失早间数据 (00:00 - 09:50)
+1月6日 00:00 - 16:23 ⚠️ 缺失晚间数据 (16:30 - 24:00)
+1月7日 07:41 - 23:43 ⚠️ 缺失早间数据 (00:00 - 07:40)
+1月13日 2024-01-10 00:00 - 23:59 ❌ 严重异常：数据日期为1月10日
+1月14日 08:46 - 23:59 ⚠️ 缺失早间数据 (00:00 - 08:45)
+
+今天主要是清洗
+
+
+
+前端:Vue Vue Element
+后端:Flask SpringBoot
+数据库：HBase MySQL Mycat
+
