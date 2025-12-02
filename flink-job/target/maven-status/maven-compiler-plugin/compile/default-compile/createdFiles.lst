@@ -1,0 +1,6 @@
+cn\cumt\bigdata\App.class
+cn\cumt\bigdata\ETCStreamJob.class
+cn\cumt\bigdata\ETCStreamJob$2.class
+cn\cumt\bigdata\ETCRecord.class
+cn\cumt\bigdata\ETCStreamJob$1.class
+cn\cumt\bigdata\ETCStreamJob$HBaseSinkFunction.class
