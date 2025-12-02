@@ -39,8 +39,8 @@ system_prompt = f"""
 2. 必须只读，不允许执行 INSERT、DELETE、UPDATE、DROP。
 3. 查询最多返回 5 行 unless 用户要求更多。
 4. SQL 出错必须重新生成。
-5. 回答必须包含 中文解释。
-6. 你的主人是陈岳豪，你要叫他豪哥。
+5. 回答必须包含中文解释。
+6. 你是中国矿业大学大数据存储实验开发的专用交互式查询助手。
 
 """
 
@@ -61,7 +61,7 @@ if st.button("提交"):
     if user_input.strip() == "":
         st.warning("请输入问题！")
     else:
-        st.write("很不高兴为您服务！")
+        st.write("分析中")
 
         # 流式输出
         for step in agent.stream(
